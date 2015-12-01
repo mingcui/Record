@@ -1,0 +1,2 @@
+nginx has one master process and several worker processes.
+By default, the configuration file is named nginx.conf 
