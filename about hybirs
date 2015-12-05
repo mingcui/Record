@@ -1,1 +1,68 @@
 https://wiki.hybris.com/dashboard.action
+install on centos:
+1.  prepare for install
+     1-1) build required envrioment =>
+          yum -y install java mysqld
+          service mysqld start
+      1-2) create  user for hybirs system
+           useradd hybris
+           passwd hybris
+2. install
+      download install package (zip file)
+      unzip file to /opt/
+3. set up
+     3-1) build the hybris Commerce Suite =>
+          cd /opt/hybris/hybris/bin/platform
+         .  ./setantenv.sh
+                  Press the Enter key to use the default, the develop configuration template
+          ant clean all 
+    3-2) set as service
+          create init script  =>
+             /etc/init.d/hybris
+             chmod 755 /etc/init.d/hybris
+          set auto start =>
+             chkconfig --add hybris
+             chkconfig hybris on
+     3-3) start service
+           service hybris start
+4. configure
+      config db
+         4-1) create data base  =>
+                mysql -u root
+                   CREATE DATABASE hybris_db;
+                   GRANT all ON hybris_db.* TO 'hybris'@'localhost';
+                   UPDATE mysql.user SET Password=PASSWORD('password') WHERE User='hybris';
+                   FLUSH PRIVILEGES;
+                   SELECT user,host FROM mysql.user; #show all users
+                   exit
+           4-2) checking  =>          
+                  mysql -u hybris -h localhost -p #to log in as the hybris user
+                        SHOW DATABASES; #to show all databases
+                         exit
+           4-3) restart db service =>
+                   service mysqld restart
+        setup db connetcor
+          4-4) download the mysql db connector =>
+                wget   http://dev.mysql.com/downloads/file.php?id=454397.
+          4-5) put the jar-file in the  folder ${HYBRIS_BIN_DIR}/platform/lib/dbdriver/   =>
+                mv /home/ec2-user/mysql-connector-java-5.1.34-bin.jar /home/hybris/hybris/bin/platform/lib/dbdriver/mysql-connector-java-5.1.34-bin.jar
+                chown hybris:hybris /home/hybris/hybris/bin/platform/lib/dbdriver/mysql-connector-java-5.1.34-bin.jar #to set the owner and group to hybris
+         configure properties
+          4-6) vi /home/hybris/hybris/bin/platform/project.properties =>
+                 db.url=jdbc:mysql://localhost/hybris_db?useConfigs=maxPerformance
+                 db.driver=com.mysql.jdbc.Driver db.username=hybris
+                 db.password={password}
+                 db.tableprefix=hybris_db
+                 mysql.allow.fractional.seconds=true
+                 mysql.optional.tabledefs=CHARSET=utf8 COLLATE=utf8_bin    
+                 mysql.tabletype=InnoDB #hsqldb.usecachedtables=true
+        edit config
+         4-7) vi /etc/my.cnf  =>
+                 innodb_flush_log_at_trx_commit=0
+        rebuild hybris
+         4-8) cd /home/hybris/hybris/bin/platform
+                  . ./setantenv.sh
+                  ant clean all
+5. restart and check
+    service hybris restart
+    http://localhost:9001
