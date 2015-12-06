@@ -1,5 +1,7 @@
+#url#
 https://wiki.hybris.com/dashboard.action
-install on centos:
+https://wiki.hybris.com/display/release5/Installation#Installation-1.DownloadandUnpackPackages  (about install )
+##install on centos##
 1.  prepare for install
      1-1) build required envrioment =>
           yum -y install java mysqld
