@@ -2,6 +2,7 @@
 https://wiki.hybris.com/dashboard.action  wikiaccount/qq.com
 https://wiki.hybris.com/display/release5/Installation#Installation-1.DownloadandUnpackPackages  (about install )
 https://wiki.hybris.com/display/release5/hybris+Server      （for install hybris server)
+https://wiki.hybris.com/display/release5/Installation        (for install on production or develop environment)
 ##install on centos##
 1.  prepare for install
      1-1) build required envrioment =>
