@@ -1,3 +1,26 @@
 url:
 https://wiki.jenkins-ci.org/display/JENKINS/Tomcat    ;;install on tomcat
 https://wiki.jenkins-ci.org/display/JENKINS/Installing+Jenkins+on+Red+Hat+distributions         ;;install on redhat
+
+/install/
+os:centos
+require: java
+step:
+ 1. install java
+    check the java version
+    java -v
+    #if the version is old , need yum earse java
+    yum install java 
+ 2. install jenkins
+    wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+    rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+    yum install jenkins
+ 3. start up
+    /etc/init.d/jenkins start
+ 4. add as service
+    chkconfig --add jenkins
+    chkconfig --level 3 5 jenkins on
+    chkconfig --list |grep jenkins
+ 5. check and access 
+    netstat -ntlp |grep 8080
+    localhost:8080
