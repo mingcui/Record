@@ -1,0 +1,3 @@
+12/14/2015
+  ##iptables save##
+  for centos/rhel use -> service iptables save , it will save to /etc/sysconfig/iptables
