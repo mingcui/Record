@@ -1,0 +1,94 @@
+#Environment#
+ OS: Centos6
+ Require package: 
+     gcc gcc-c++ make openssl-devel libtool
+     apr-1.5.2.tar.gz apr-util-1.5.4.tar.gz httpd-2.2.31.tar.gz sqlite
+     subversion-1.8.14.tar.gz
+
+#Install#
+1 ) install apr
+   ./configure --prefix=/usr/local/apr
+   make && make install
+2 ) install apr-util
+   ./configure --perfix=/usr/local/apr-util --with-apr=/usr/local/apr
+   make && make install
+3 ) install appache-http
+   ./configure --prefix=/app/apache2 --enable-dav --enable-so --enable-modules=all --enable-maintainer-mode --enable-rewrite --with-apr=/usr/local/apr/bin/apr-1-config --with-apr-util=/usr/local/apr/bin/apu-1-config 
+   make
+   make install
+   /app/apache2/bin/apachel start
+   /app/apache2/bin/apachel stop 
+
+4 ) install sqlite
+   wget http://www.sqlite.org/2015/sqlite-autoconf-3090200.tar.gz
+   ./configure --prefix=/usr/local/sqlite
+   make && make install
+5 ) install subversion
+   ./configure --prefix=/app/subversion --with-apxs=/app/apache2/bin/apxs --with-apr=/usr/local/apr/bin/apr-1-config --with-apr-util=/usr/local/apr-util/bin/apu-1-config --with-sqlite=/usr/local/sqlite --enable-mod-activation --enable-shared --enable-maintainer-mode
+   make
+   make install
+
+#Setup#
+1 ) check modules
+   /app/apache2/bin/conf/httpd.conf ->
+   LoadModule dav_svn_module     modules/mod_dav_svn.so
+   LoadModule authz_svn_module   modules/mod_authz_svn.so
+2 ) add environment variable
+   vi /etc/profile   ->
+   SVN_HOME=/app/subversion
+   SVNPATH=$PATH:${SVN_HOME}/bin
+   export SVN_HOME
+   export SVNPATH
+3 ) setup svn server
+  3.1 ) create repostry
+        mkdir /app/svnroot/APP
+        svnadmin create --fs-type fsfs /app/svnroot/APP     ;;指定数据储存为FSFS
+        svn import /app/svnroot/tmp file:///app/svnroot/APP/ --messsage "init"  ;;导入已有的目录树,假设目录树放在/app/svnroot/tmp 下
+  3.2 ) configure svn
+        vi /app/svnroot/APP/conf/svnserver.conf  =>
+[general] 
+
+anon-access = none # 使非授权用户无法访问 
+
+auth-access = write # 使授权用户有写权限 
+
+password-db = /app/svnroot/APP/conf/passwd  # 指明密码文件路径 
+
+authz-db = /app/svnroot/APP/conf/authz    # 访问控制文件
+
+realm = /app/svnroot/APP  #认证命名空间
+
+   3.3 ) configure apache
+         vi /app/apache2/conf/httpd.conf =>
+<Location /svn>
+
+  DAV svn
+
+  SVNParentPath /app/svnroot/
+
+  AuthzSVNAccessFile /app/svnroot/APP/conf/authz
+
+  AuthType Basic
+
+  AuthName "Subversion repository"
+
+  AuthUserFile /app/svnroot/APP/conf/passwd
+
+  Require valid-user
+
+</Location>
+
+   3.4 ) setup svn user and group permission
+        vi /app/svnroot/APP/conf/authz
+        /app/apache2/bin/htpasswd -c /app/svnroot/APP/conf/passwd <username> ;;for first time
+        /app/apache2/bin/htpasswd -m /app/svnroot/APP/conf/passwd  <username>        
+
+4 ) start up server
+   /app/apache2/bin/apachel start
+   /app/subversion/bin/svnserver -d -r /app/svnroot/   
+
+
+
+   
+
+  
