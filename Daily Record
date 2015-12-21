@@ -1,3 +1,10 @@
 12/14/2015
   ##iptables save##
   for centos/rhel use -> service iptables save , it will save to /etc/sysconfig/iptables
+  
+12/21/2015
+ ## setup ssh idel time ##
+ vi /etc/ssh/sshd_config =>
+   ClientAliveInterval 3000 (default 0 sec）
+   service sshd reload
+  
