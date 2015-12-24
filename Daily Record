@@ -13,3 +13,4 @@
    let kernel panic reboot happan 30s 
    # vi /etc/sysctl.conf
     kernel.panic = 30
+ last reboot   ;;show last reboot time
