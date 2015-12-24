@@ -8,3 +8,8 @@
    ClientAliveInterval 3000 (default 0 sec）
    service sshd reload
   
+12/24/2015
+ ## kernel panic reboot ##
+   let kernel panic reboot happan 30s 
+   # vi /etc/sysctl.conf
+    kernel.panic = 30
