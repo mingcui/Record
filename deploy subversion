@@ -4,8 +4,9 @@
      gcc gcc-c++ make openssl-devel libtool
      apr-1.5.2.tar.gz apr-util-1.5.4.tar.gz httpd-2.2.31.tar.gz sqlite
      subversion-1.8.14.tar.gz
+     svnadmin3.0 tomcat6 jdk1.8 mysql5.1 msyql-server
 
-#Install#
+#Install subversion#
 1 ) install apr
    ./configure --prefix=/usr/local/apr
    make && make install
@@ -64,7 +65,7 @@ realm = /app/svnroot/APP  #认证命名空间
 
   DAV svn
 
-  SVNParentPath /app/svnroot/
+  SVNParentPath /app/svnroot/        ;;this set for svn depository path directory
 
   AuthzSVNAccessFile /app/svnroot/APP/conf/authz
 
@@ -87,7 +88,64 @@ realm = /app/svnroot/APP  #认证命名空间
    /app/apache2/bin/apachel start
    /app/subversion/bin/svnserver -d -r /app/svnroot/   
 
+##Install svn admin##
+1 ) configure java
+ echo "export JAVA_HOME=/app/jdk1.8.0_60/" >> /etc/profile
 
+2 ) setup tomcat
+  tar -zxf tomcat -C /app/
+3 ) install mysql
+   yum install mysql mysql-server
+4 ) install svn admin
+   unzip svnadmin3.1.0.5.zip -d /app/svnadmin
+   cp /app/svnadmin/svnadmin.war /app/apache-tomcat-6.0.44/webapps/
+   /app/apache-tomcat-6.0.44/bin/startup.sh
+5 ) configure
+  4.1 ) initi mysql
+   service myssqld start
+   mysql>
+   GRANT all on svnadmin.* to svnadmin@127.0.0.1 identified by '123';
+   create database if not exists svnadmin default character set utf8;
+   use svnamdin;
+   source /app/svnadmin/db/mysql5.sql;
+   flush privileges;
+   service mysqld restart
+  
+  4.2 ) setup jdbc
+    vi /app/apache-tomcat-6.0.44/webapps/svnadmin/WEB-INF/jdbc.properties =>
+    MySQL.jdbc.driver=com.mysql.jdbc.Driver
+    MySQL.jdbc.url=jdbc:mysql://127.0.0.1:3306/svnadmin?characterEncoding=utf-8
+    MySQL.jdbc.username=svnadmin
+    MySQL.jdbc.password=123
+   
+ 4.3 ) access svnadmin
+   http://192.168.0.105:8080/svnadmin
+   first login will setup admin account 
+   and add this admin account to manager group
+
+ 4.4 ) setup project with http type
+     it will build http.conf in svnroot
+      cat httpd.conf  =>
+#Include /app/svnroot/APP/conf/httpd.conf
+<Location /svn/APP>
+DAV svn
+SVNPath /app/svnroot/APP   ;;this should be svn repostriy
+AuthType Basic
+AuthName "APP"
+AuthUserFile /app/svnroot/APP/conf/passwd.http
+AuthzSVNAccessFile /app/svnroot/APP/conf/authz
+Require valid-user
+</Location>
+
+#Note#
+If meet svn: E160013 error, should add below in apache2/httpd.conf => in DAV svn Location
+ SVNAdvertiseV2Protocol Off
+the msyql default use password auth is SHA encryption
+need use htpasswd -s create password
+-s  Force SHA encryption of the password.
+
+    
+  
 
    
 
