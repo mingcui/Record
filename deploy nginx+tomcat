@@ -1,0 +1,149 @@
+roject Describe: nginx+tomcat
+                  use nginx  separate static and dynamic request
+                  tomcat run two instance for the same time
+Envrionment:
+ 	   OS:  CentOS 6.5
+           package: tomcat jdk nginx mysql
+
+Install:
+   1 )  install require package
+          yum install mysql mysql-server 
+   2 )  install tomcat
+           wget apache-tomcat-7.0.67.tar.gz
+           tar -C /opt/
+   3 )  instll nginx
+        3.1  add nginx reposity for yum
+             [nginx]
+	     name=nginx repo
+	     baseurl=http://nginx.org/packages/centos/6/$basearch/
+	     gpgcheck=0
+	     enabled=1
+        3.2  yum update 
+             yum install nginx
+
+
+Setup:
+   1 )  set up tomcat
+      1.1 ) build two instance
+          mkdir -p /app/{dev,prod}
+          cp -r /opt/apache-tomcat-7.0.67/{conf,logs,temp,webapps} /app and prod
+      1.2 ) clean up logs and webapps folder
+      1.3 ) configure
+          vi server.xml =>
+             change server port on  <Server port="8006" shutdown="SHUTDOWN">
+             change connect port for http on  <Connector port="8080" protocol="HTTP/1.1
+      1.4 ) create startup script =>
+         
+  #!/bin/sh
+  . /etc/init.d/functions
+  RETVAL=$?
+ # tomcat instance work home
+ export CATALINA_BASE="$PWD"
+ # tomcat install home
+ export CATALINA_HOME="/opt/apache-tomcat-7.0.67"
+ # option
+ export JVM_OPTIONS="-Xms128m -Xmx1024m -XX:PermSize=128m -XX:MaxPermSize=512m"
+ case "$1" in
+ start)
+ if [ -f $CATALINA_HOME/bin/startup.sh ];then
+ echo $"Start Tomcat"
+ $CATALINA_HOME/bin/startup.sh
+ fi
+ ;;
+ stop)
+ if [ -f $CATALINA_HOME/bin/shutdown.sh ];then
+ echo $"Stop Tomcat"
+ $CATALINA_HOME/bin/shutdown.sh
+ fi
+ ;;
+ *)
+ echo $"Usage: $0 {start|stop}"
+ exit 1
+ ;;
+ esac
+ exit $RETVAL
+ 
+     1.5 ) start up service
+   
+   2 ) set up nginx
+    2.1 ) main setup 
+     vi /etc/ngnix.conf =>
+ user  nginx;
+worker_processes  1;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+    gzip on;
+    gzip_min_length 1k;
+    gzip_buffers    4 16k;
+    gzip_http_version 1.0;
+    gzip_comp_level 2;
+    gzip_types text/plain application/x-javascripttext/css application/xml;
+    gzip_vary on;
+
+
+    include /etc/nginx/conf.d/*.conf;
+}
+
+    2.2 ) setup virtual host
+        vi /etc/ngins/conf.d/dev.conf | prod.conf
+server {
+        listen       80;                   #for http static request
+        server_name IP;
+        location / {
+
+            root  /app/prod;
+            index  index.html index.jsp index.html;
+        }
+        location ~ .*\.jsp$ {			# jsp redirect to tomcat	
+        index index.jsp;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        client_max_body_size 10m;
+        client_body_buffer_size 128k;
+        proxy_connect_timeout 90;
+        proxy_read_timeout 90;
+        proxy_buffer_size 4k;
+        proxy_buffers 6 32k;
+        proxy_busy_buffers_size 64k;
+        proxy_temp_file_write_size 64k;
+        }
+         location ~ .*\.(jsp|js|css)?$ {
+            ...
+            exprises 1d;         #set cache for a day
+        }
+        error_page  404              /404.html;
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+
+  3 ) start up nginx       
+       
