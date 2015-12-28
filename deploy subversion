@@ -106,7 +106,7 @@ realm = /app/svnroot/APP  #认证命名空间
    mysql>
    GRANT all on svnadmin.* to svnadmin@127.0.0.1 identified by '123';
    create database if not exists svnadmin default character set utf8;
-   use svnamdin;
+   use svnadmin;
    source /app/svnadmin/db/mysql5.sql;
    flush privileges;
    service mysqld restart
