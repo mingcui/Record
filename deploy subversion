@@ -119,7 +119,7 @@ realm = /app/svnroot/APP  #认证命名空间
     MySQL.jdbc.password=123
    
  4.3 ) access svnadmin
-   http://192.168.0.105:8080/svnadmin
+   http://IP:8080/svnadmin
    first login will setup admin account 
    and add this admin account to manager group
 
