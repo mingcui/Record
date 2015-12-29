@@ -140,6 +140,7 @@ Require valid-user
 #Note#
 If meet svn: E160013 error, should add below in apache2/httpd.conf => in DAV svn Location
  SVNAdvertiseV2Protocol Off
+ don't use SVNParentPath, use SVNPath because svn admin v3 don't support SVNParentPath 
 the msyql default use password auth is SHA encryption
 need use htpasswd -s create password
 -s  Force SHA encryption of the password.
