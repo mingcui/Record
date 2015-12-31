@@ -27,3 +27,4 @@ end    ;;this end shouldn't have any character before it
 this caused by can't accecss gem source , need change source as follow:
 gem sources --add https://ruby.taobao.org/ --remove https://rubygems.org/   ::remove rubygems and add ruby taobao
 gem sources -l
+gem sources -u    ;;update cache
