@@ -22,3 +22,8 @@ end    ;;this end shouldn't have any character before it
 
 ####删除含特殊字符的文件 ##
  rm ./FILENAME
+
+###gem install error : Connection reset by peer ###
+this caused by can't accecss gem source , need change source as follow:
+gem sources --add https://ruby.taobao.org/ --remove https://rubygems.org/   ::remove rubygems and add ruby taobao
+gem sources -l
