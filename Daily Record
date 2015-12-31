@@ -14,3 +14,11 @@
    # vi /etc/sysctl.conf
     kernel.panic = 30
  last reboot   ;;show last reboot time
+
+12/31/2015
+##here-document at line 17 delimited by end-of-file#
+cat > file <<-end
+end    ;;this end shouldn't have any character before it  
+
+####删除含特殊字符的文件 ##
+ rm ./FILENAME
