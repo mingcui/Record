@@ -1,0 +1,5 @@
+##useful command##
+<-  connection ->
+ mysql --host=localhost --user=myname --password=mypass mydb
+ mysql -h localhost -u myname -pmypass mydb
+ mysql -u root -p -e "sql command"
