@@ -3,3 +3,22 @@
  mysql --host=localhost --user=myname --password=mypass mydb
  mysql -h localhost -u myname -pmypass mydb
  mysql -u root -p -e "sql command"
+
+<- import from file ->
+ mysql db_name < script.sql > output.tab
+ mysql> source file_name
+ 
+<- admin ->
+ mysqladmin [options] command [command-arg] [command [command-arg]]
+ 
+<- backup ->
+ mysql > sqlfile
+ mysqldump [options] db_name [tbl_name ...]
+ mysqldump [options] --databases db_name ...
+ mysqldump [options] --all-databases
+
+<- show database,tables.. ->
+ mysql> show
+ mysqlshow [options] [db_name [tbl_name [col_name]]]
+ 
+
