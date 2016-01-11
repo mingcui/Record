@@ -1,3 +1,10 @@
 ## Jan 4 ##
 sensu check script default path:
 /opt/sensu/embedded/lib/ruby/gems/2.2.0/gems/
+
+## Jan 11 ##
+xz 格式的解压方式：
+file Python-3.4.4.tar.xz ->
+ Python-3.4.4.tar.xz: xz compressed data
+ xz -d Python-3.4.4.tar.xz  -> 
+   Python-3.4.4.tar
