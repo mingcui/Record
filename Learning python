@@ -1,0 +1,29 @@
+模块：
+  定义模块
+    def module_name (argu)
+        ...
+        
+  使用模块：
+      import module-name
+      module-name.模块中定义的函数
+      或者
+      from module-name import 模块中定义的函数   ；；这种方式下可以直接使用模块函数，前提是代码中不能有相同名字的函数定义      
+  发布模块：
+      mkdir project
+      cp module.py project
+      vim setup.py  ->
+from distutils.core import setup
+
+setup(
+      name          = 'nester',
+      version       = '1.0.0',
+      py_modules    = ['first_mod'],
+      author        = 'root',
+      author_emial  = 'root@example.com',
+      description   = 'The first test',
+      )
+      
+      python setup.py sdist    # 构建发布
+      python setup.py install  #安装模块到本地副本
+      
+  
