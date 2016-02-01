@@ -1,2 +1,89 @@
 nginx has one master process and several worker processes.
 By default, the configuration file is named nginx.conf 
+ 将动态内容重定向至tomcat
+
+再次编辑配置文件
+
+[root@node2nginx]# vim nginx.conf
+
+改为以下参数，凡是以jsp等动态页面的请求统统转发至10.0.10.61的80端口上
+
+        location / {
+
+            root /usr/shar/nginx/html;
+
+            index index.html;
+
+        }
+
+        location ~ \.(jsp|do)$ {
+
+            proxy_pass http://10.0.10.61:80; 
+        }
+   因为只将jsp跳转过来但是图片找不到，这时我们需要使用nginx来响应用户的静态请求
+
+实现动静分离
+
+将图片复制到nginx本地目录，这里我们为了方便并且为了目录的一致性，将其源码全部拷贝至nginx节点
+
+[root@node2nginx]# mkdir -p /web/html
+
+[root@node1tomcat]# scp -r app1 root@node2:/web/html
+
+编辑nginx配置文件，修改如下：
+
+server {
+
+       listen       8080;
+
+        server_name  localhost;
+
+           index index.jsp;
+
+        #charset koi8-r;
+
+        #access_log logs/host.access.log  main;
+
+        location / {
+
+        root /web/html;
+
+           index index.html;
+
+        }
+
+}
+
+    server {
+
+       listen       80;
+
+        server_name  localhost;
+
+           index index.jsp;
+
+        #charset koi8-r;
+
+        #access_log logs/host.access.log  main;
+
+   location/ {
+
+         proxy_pass http://10.0.10.61:80;
+
+        }
+
+     location ~*\.(html|gif|jpg|jpeg|ico|swf|htm|xml)$ {
+
+         proxy_pass http://10.0.10.62:80;
+
+     }
+
+     location ~* \.(jsp|do)$ {
+
+         proxy_pass http://10.0.10.61:80;
+
+     }
+
+}
+
+
