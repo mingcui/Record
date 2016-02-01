@@ -1,0 +1,50 @@
+apache http 反向代理+动静分离
+NameVirtualHost *:80
+
+<VirtualHost *:80>
+
+    ServerAdmin niuniudeshenghuo@163.com
+
+    DocumentRoot "/usr/local/tomcat/webapps/ROOT"
+
+    ServerName    www.wanqiu.com
+
+    ServerAlias  wanqiu.com
+
+    ErrorLog "logs/www.wanqiu.com-error.log"
+
+    CustomLog "logs/www.wanqiu.com-access_log" common
+
+    ProxyRequests Off
+
+    ProxyPreserveHost On
+
+    ProxyPass /*.jpg !
+
+    ProxyPass /*.gif !
+
+    ProxyPass /*.png !
+
+    ProxyPass /*.js !
+
+    ProxyPass /*.html !
+
+    ProxyPass /test.html !
+
+    ProxyPass / http://172.16.123.111:8080/
+
+    ProxyPassReverse / http://172.16.123.111:8080/
+    <Directory "/usr/local/tomcat/webapps/ROOT">
+
+    Options -Indexes
+
+    AllowOverride None
+
+    Order allow,deny
+
+    Allow from all
+
+   </Directory>
+
+</VirtualHost>
+
