@@ -14,3 +14,5 @@ file Python-3.4.4.tar.xz ->
 devops url:
 http://www.devopsbookmarks.com/config-management
 http://electric-cloud.com/
+saltstack
+ansible
