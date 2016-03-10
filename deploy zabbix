@@ -1,0 +1,77 @@
+   Project: Deploy mornitoring system
+     Target: In order to monitoring sersers, when server restarting should send alarm mail to admin
+   Solution: Choose Zabbix as mornitoring system
+             Because it deploy easy and both userful for small and big business, and it can be second develop
+Envrionment: 
+             Mornitor server:
+                            host: VT-2
+                              ip: 10.202.16.221
+                              os: centos6.5
+                      agent:
+                           host: VT-1
+                             ip: 10.202.16.208
+			     os: centos6.5
+                              
+Implementat:
+            1 ) get zabbix repostory 
+                wget http://repo.zabbix.com/zabbix/2.4/rhel/6/x86_64/zabbix-release-2.4-1.el6.noarch.rpm  
+            2 ) install required mysql
+                yum localinstall mysql57-community-release-el6-7.noarch.rpm
+                vi /etc/yum.repos.d/mysql-community.repo  => #enable 5.6 and disable 5.7
+ [mysql56-community]
+name=MySQL 5.6 Community Server
+baseurl=http://repo.mysql.com/yum/mysql-5.6-community/el/6/$basearch/
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+                yum makecache
+                yum install mysql-community-server
+                vi /etc/my.cnf  ==> add
+character-set-server=utf8      
+innodb_file_per_table=1
+                chkconfig mysqld on
+                service mysqld start
+
+            3 ) install zabbix server
+                yum install zabbix-server-mysql zabbix-web-mysql
+            4 ) configure zabbix for mysql
+mysql> CREATE DATABASE zabbix character set utf8;
+mysql> GRANT ALL PRIVILEGES ON zabbix.* to zabbix@localhost IDENTIFIED BY 'zabbix';
+mysql> FLUSH PRIVILEGES;
+            5 ) initial database
+                cd /usr/share/doc/zabbix-server-mysql-2.4.7/create/
+		mysql zabbix < schema.sql
+		mysql zabbix < images.sql
+		mysql zabbix < data.sql
+                service mysqld restart
+            6 ) configure zabbix
+		vi /etc/zabbix/zabbix_server.conf ==> add
+DBHost=localhost
+DBName=zabbix
+DBUser=zabbix
+DBPassword=zabbix
+            7 ) configure http for zabbix frontend
+		vi etc/httpd/conf.d/zabbix.conf ==> add
+php_value max_execution_time 300
+php_value memory_limit 128M
+php_value post_max_size 16M
+php_value upload_max_filesize 2M
+php_value max_input_time 300
+php_value date.timezone Asia/Shanghai
+                /etc/init.d/httpd start
+            8 ) start service
+		/etc/init.d/zabbix-server start
+		
+            9 ) access and check for front end
+                http://10.202.16.226/zabbix
+                default power user is admin password is zabbix
+	   10 ) need open networking prot on TCP 10050 and 10051
+           11 ) install zabbix-agent on zabbix server    #this will monitoring server itself
+		yum -y install zabbix-agent.x86_64
+		/etc/init.d/zabbix-agent start
+           12 ) add agent 
+                install agent ==>
+                rpm -ivh http://repo.zabbix.com/zabbix/2.4/rhel/6/x86_64/zabbix-release-2.4-1.el6.noarch.rpm 
+		yum -y install zabbix-agent.x86_64
+		vi /etc/zabbix/zabbix_agentd.conf ==> change 
+ServerActive=10.202.16.226   #active mode, auto connect server from 10051
