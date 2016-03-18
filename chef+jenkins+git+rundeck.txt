@@ -1,0 +1,141 @@
+environment: 
+        chef server: 
+               hostname: VT-2
+                     ip: 10.202.16.226
+                     os: CentOs6.5
+   chef workstation:
+               hostname: VT-2
+        chef client: 
+               hostname: VT-1
+                     ip: 10.202.16.208
+		     os: Centos6.5
+         git server:
+               hostname: VT-2
+     jenkins server:
+               hostname: VT-2
+                     
+
+main package: chef-server-core-12.4.1-1.el6.x86_64.rpm
+              git-core
+ 
+deploy step:
+    1 ) Deploy chef server
+      1.1) install chef-server-core
+             yum -y install chef-server-core-12.4.1-1.el6.x86_64.rpm
+      1.2) initiailize
+        1.2.1) reconfigure
+                 chef-server-ctl reconfigure
+        1.2.2) restart server  (option) 
+                 shutdown -r now
+           
+      1.3) configure
+          1.3.1) create first admin user
+                 chef-server-ctl user-create root Chef Admin root@127.0.0.1 'accdigital' --filename /root/chefadmin.pem
+          1.3.2) create organization
+                 chef-server-ctl org-create acc 'Accenture' --association_user root --filename /root/acc.pem
+      1.4) install chef web manage
+             chef-server-ctl install chef-manage 
+             chef-manage-ctl reconfigure
+             chef-server-ctl reconfigure
+      1.5) access web manage
+             https://10.202.16.226
+
+     2 ) Deploy git server
+       2.1) create git user
+            useradd git
+            passwd git   #accdigital
+            su - git
+            exit
+       2.2) install git core
+            yum -y install git
+       2.3) create git repostry
+            su - git
+            mkdir /home/git/repository
+
+       2.4) initiailize repostry for share
+         2.4.1) git init --bare repo_gitserver.git
+         2.4.2) mkdir inital.commit   #this for clone repostry to local , an emty repository need have some files to activate this repository then can it be clone on local
+         2.4.3) cd inital.commit
+                git init
+                git remote add origin ~/repository/
+                touch Readme
+                git add.
+                git commit -m "inital"
+                git push origin master  
+          
+       2.5) install gitweb (option)
+            yum install gitweb
+            vi git.conf  --> "Alias /git /var/www/git" to "Alias /gitweb /var/www/git"
+            vi /etc/gitweb.conf --> $projectroot = "home/git"
+     3 ) Deploy chef work station
+       3.1) install chef-client
+            yum install chef-12.8.1-1.el6.x86_64.rpm
+       3.2) create chef repoistry
+            cd /root
+            mkdir -p chef-repo/.chef
+            cp acc.pem chefadmin.pem chef-repo/.chef/
+            echo '.chef' >> ~/chef-repo/.gitignore
+       3.3) setup workstation
+            cd /root/chef-repo/.chef
+            vim knife.rb ==>
+current_dir = File.dirname(__FILE__)
+
+                 _level                   :info
+
+                 log_location             STDOUT
+
+                 node_name                "root"
+
+                 client_key               "#{current_dir}/chefadmin.pem"
+
+                # validation_client_name   "acc-validatoar"
+
+                 validation_key           "#{current_dir}/notexist"              #Starting with chef-client version 12.1, it is possible to bootstrap a node using the USER.pem file instead of the ORGANIZATION-validator.pem file. This is known as a “validatorless bootstrap”
+
+                 chef_server_url          "https://VT-2/organizations/acc"
+
+                 cookbook_path            ["#{current_dir}/../cookbooks"]
+         3.4) setup git repoistry for workstation
+              git init
+              git status
+              cd ~/chef-repo/
+              git add .
+              git commit -m "add chef repo"
+
+
+      4 ) install chef client
+        4.1) create node on chef server
+            knife bootstrap VT-1 --ssh-user root --node-name "VT-1"
+        4.2) check
+            knife node list
+
+      5 ) Deploy jenkins
+        5.1 ) creat jenkins start script
+              vi /etc/init.d/jenkins   ==>
+#!/bin/sh
+#
+#add for chkconfig
+#chkconfig:2345 70 30 #description:jenkins server
+#processname:jenkins
+
+su - git -c "/app/jdk1.7.0_79/bin/java -jar /app/jenkins/jenkins.war --httpPort=8080 --daemon --logfile=/app/jenkins/jenkins.log"
+
+        5.2 ) add to service
+               chmod u+x /etc/init.d/jenkins
+               chkconfig jenkins on
+        5.3 ) install git plugin
+             on web jenkins: Manage jenkins -> Mangae Plugins -> Available , select "Git plugin" "Git server plugin" "Git client plugin" "Robot Framework plugin"
+              ##if can't see the plugins then go to Advanced -> Check now 
+        5.4 ) configure git
+              creat job test -> git repostories url -> git@10.202.16.226:/home/git/repository 
+              Credentials -> none ( this should let git add risa.pub to /home/git/.ssh/authorized_keys) or else need use git/password in credentials, if failed need delet Credentials in jenkins Dashboard
+
+       6 ) Deploy rundeck
+         6.1) install rundeck
+              rpm -Uvh http://repo.rundeck.org/latest.rpm
+              yum install rundeck
+
+          
+                           
+                 
+                                      
