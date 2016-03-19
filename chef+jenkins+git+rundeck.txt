@@ -90,7 +90,7 @@ current_dir = File.dirname(__FILE__)
 
                 # validation_client_name   "acc-validatoar"
 
-                 validation_key           "#{current_dir}/notexist"              #Starting with chef-client version 12.1, it is possible to bootstrap a node using the USER.pem file instead of the ORGANIZATION-validator.pem file. This is known as a “validatorless bootstrap”
+                 validation_key           "#{current_dir}/notexist"              #Starting with chef-client version 12.1, it is possible to bootstrap a node using the USER.pem file instead of the ORGANIZATION-validator.pem file. This is known as a â€œvalidatorless bootstrapâ€
 
                  chef_server_url          "https://VT-2/organizations/acc"
 
@@ -134,6 +134,20 @@ su - git -c "/app/jdk1.7.0_79/bin/java -jar /app/jenkins/jenkins.war --httpPort=
          6.1) install rundeck
               rpm -Uvh http://repo.rundeck.org/latest.rpm
               yum install rundeck
+         6.2) configure
+              6.2.1) change default port
+                      vi /etc/rundeck/profile -->RDECK_HTTP_PORT=4440 to 9002
+              6.2.2) change hostname
+                      vi /etc/rundeck/framework.properties  -->
+framework.server.name = chef-server.test.com
+framework.server.hostname = chef-server.test.com
+framework.server.port = 9002
+framework.server.url = http://chef-server.test.com:9002
+                       
+                       vi /etc/rundeck/rundeck-config.properties    -->
+grails.serverURL=http://chef-server.test.com:9002
+              6.2.3) start service
+                       /etc/init.d/rundeckd start
 
           
                            
