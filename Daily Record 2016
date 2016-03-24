@@ -9,6 +9,20 @@ file Python-3.4.4.tar.xz ->
  xz -d Python-3.4.4.tar.xz  -> 
    Python-3.4.4.tar
 
+## Jan 25 ##
+ mysql 6.5 [ERROR] InnoDB: Could not open or create the system tablespace. 
+solution:  delete below there files 
+     rm -rf ibdata1 ib_logfile0 ib_logfile1
+
+Unknown column 'plugin' in 'mysql.user'
+Root cause: caused by update mysql
+Solution:  mysql < init.sql
+USE mysql;
+ALTER TABLE `user` ADD `Create_tablespace_priv` ENUM('N','Y') NOT NULL DEFAULT 'N' AFTER `Trigger_priv`;
+ALTER TABLE `user` ADD `plugin` CHAR(64) NULL AFTER `max_user_connections`;
+ALTER TABLE `user` ADD `authentication_string` TEXT NULL DEFAULT NULL AFTER `plugin`;
+ALTER TABLE `user` ADD `password_expired` ENUM('N','Y') NOT NULL DEFAULT 'N' AFTER `authentication_string`;
+
 
 ## mar 10 ###
 devops url:
