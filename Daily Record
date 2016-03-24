@@ -28,3 +28,27 @@ this caused by can't accecss gem source , need change source as follow:
 gem sources --add https://ruby.taobao.org/ --remove https://rubygems.org/   ::remove rubygems and add ruby taobao
 gem sources -l
 gem sources -u    ;;update cache
+
+##Hybris_5.7 build up failed caused by  solr start failed## =>
+ may not set JAVA_HOME for solr, 
+Vi /app/hybris_dev_5.7/hybris/bin/ext-commerce/solrserver/resources/solr/bin/solr.in.sh 
+add SOLR_JAVA_HOME="/app/jdk1.8.0_60"  at begining
+
+##error for svn##
+Access svn =>  10.202.16.208 ==> 404 forbidden
+Message from apache error log:
+[Fri Dec 25 14:13:10 2015] [error] [client 10.202.21.59] Failed to load the mod_authz_svn config: Section name 'APP:/Hybris/Asset/' contains non-canonical fspath '/Hybris/Asset/'
+
+This is means /Hybris/Asset/ in auth file not exist in repo database , delete it from auth file it will be ok
+
+##Tortoise Can't open file '/app/svnroot/APP/db/txn-current-lock': Permission denied ##
+chmod -R o+rws /app/svnroot/APP/db/
+
+##sensu transport not connected ##
+Configure transport -->
+ vi config.json   #add
+   
+ "transport": {
+    "name": "rabbitmq"
+  }
+restart sensu-server and sensu-api
