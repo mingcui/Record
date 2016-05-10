@@ -1,0 +1,99 @@
+
+Enviroment: 
+           OS: CentOs 6.7/Kernel-2.6.32
+         Host: vm1 （over mypc)
+           IP: 10.4.88.104
+          App: elasticsearch (2.3.2)
+               logstash (2.3.2)
+               kibana (4.5.0)
+
+Deploy:
+
+I ) ElasticSearch
+ 1) prepare
+  1.1) check java
+      jdk need 1.8.0+
+  1.2) create a account to run elasticsearch
+      useradd elk
+      passwd elk
+      su - elk
+      vim .bashrc -> export JAVA_HOME='JDK PATH' (option)
+      exit
+  1.3) download package
+      cd /packages
+      curl -L -O https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/2.3.2/elasticsearch-2.3.2.zip
+ 
+ 2) install 
+   unzip elasticsearch-2.3.2.zip -d /opt/
+
+ 3) configure & start
+  3.1) vim /opt/elasticsearch-2.3.2/config/elasticsearch.yml   ->
+    cluster.name: elk-cluster
+    node.name: node0
+    network.host: 10.4.88.104
+   
+  3.2) chown elk -R /opt/elasticsearch-2.3.2 
+       su - elk
+       /opt/elasticsearch-2.3.2/bin/elasticsearch -d
+  3.3) install plugin
+      /opt/elasticsearch-2.3.2/bin/plugin install mobz/elasticsearch-head
+  3.4) restart
+       curl -XPOST 'http://localhost:9200/_shutdown'
+       /opt/elasticsearch-2.3.2/bin/elasticsearch -d
+
+ 
+ 4) checking
+   curl 'http://localhost:9200/?pretty' 
+
+II) Logstach
+  1) download package
+    curl -L -O https://download.elastic.co/logstash/logstash/logstash-2.3.2.zip
+  2) install
+    unzip /opt/logstash-2.3.2.zip -d /opt/
+  3) start & check
+    /opt/logstash-2.3.2/bin/logstash -e 'input { stdin { } } output { stdout {} }' 
+    exit by Ctrl+D
+
+III) Kibana
+  1) download package
+     wget https://download.elastic.co/kibana/kibana/kibana-4.5.0-linux-x64.tar.gz
+  2) install
+     tar -zxf kibana-4.5.0-linux-x64.tar.gz -C /opt/
+  3) vim /opt/kibana-4.5.0-linux-x64/kibana.yml  -->
+     server.port: 5601
+     server.host: 127.0.0.1
+     elasticsearch.url: http://10.4.88.104:9200
+     kibana.index: ".kibana"
+  4) start service & check
+    /opt/kibana-4.5.0-linux-x64/bin/kibana &
+    access http://10.4.88.104:5601
+    
+  5) set login kibana with account
+   5.1) install nginx
+   5.2) setup nginx reverse proxy
+      vim /etc/nginx/conf.d/kibana.conf   -->
+server {
+
+        listen       80;
+        server_name  10.4.88.104;
+        charset utf8;
+        location / {
+        proxy_pass http://127.0.0.1:5601$request_uri;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Via "nginx";
+        auth_basic "secret";
+        auth_basic_user_file /etc/nginx/conf.d/passwd.db;
+        }
+    access_log off;
+    }
+
+      /usr/bin/htpasswd  -c /etc/nginx/conf.d/passwd.db elk
+    5.3) check
+       access http://10.4.88.104
+     
+  
+
+
