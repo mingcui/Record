@@ -93,7 +93,26 @@ server {
       /usr/bin/htpasswd  -c /etc/nginx/conf.d/passwd.db elk
     5.3) check
        access http://10.4.88.104
-     
+    
+    IV) extend redis
+  1) download package
+      wget http://download.redis.io/releases/redis-3.2.0.tar.gz
+  2) install
+    2.1) tar -zxf redis-3.2.0.tar.gz -C /home/ops/
+    2.2) cd /home/ops/redis-3.2.0
+         make
+         cd src
+         make install
+  3) configure => vi redis.conf
+        bind 10.4.88.104
+  4) start
+        src/redis-server redis.conf &
+  5) check
+        src/redis-cli -h 10.4.88.104 ->
+        > PING
+        it will return PONG
+        help -> help
+        quit -> exit 
   
 
 
