@@ -1,5 +1,8 @@
+#-*- encoding: gb2312 -*-
 import poplib
 import email
+from email.parser import Parser
+from email.header import decode_header
 import smtplib
 import imaplib
 
@@ -30,7 +33,15 @@ conn.user(users)
 conn.pass_(pasd)
 print('Messages: %s. Size: %s' % conn.stat())
 resp,mails,octets = conn.list()
-messages = conn.retr(1)
-print messages
+index = len(mails)
+resp,lines,octets = conn.retr(index)
+msg_content = '\r\n'.join(lines)
+msg = Parser().parsestr(msg_content)
 
+# get and decode subject
+subject = msg.get("subject")
+h = email.Header.Header(subject)
+dh = email.Header.decode_header(h)
+subject = dh[0][0]
+print "subject:", subject
 conn.quit()
